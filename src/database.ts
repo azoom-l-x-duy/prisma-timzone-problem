@@ -5,5 +5,5 @@ export default new Prisma.PrismaClient({
     db: {
       url: process.env.DATABASE_URL
     }
-  },
+  }
 })

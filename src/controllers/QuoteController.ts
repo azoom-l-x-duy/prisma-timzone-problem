@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import prisma from '../database'
+import { log } from 'console'
 
 class QuoteController {
   static index = async(req: Request, res: Response) => {
@@ -22,6 +23,18 @@ class QuoteController {
     })
 
     return res.send(newQuote)
+  }
+
+  static update = async(req: Request, res: Response) => {
+    const { id } = req.params
+    const { quote } = req.body
+
+    const updatedQuote = await prisma.quote.update({
+      where: { id: +id },
+      data: { quote },
+    })
+
+    return res.send(updatedQuote)
   }
 }
 

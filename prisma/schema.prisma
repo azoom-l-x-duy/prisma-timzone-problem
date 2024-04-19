@@ -5,9 +5,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// SQLite
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./.db.dev/dev.db"
+// }
+
+// MySQL
 datasource db {
-  provider = "sqlite"
-  url      = "file:./.db.dev/dev.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Movie {
@@ -24,7 +31,11 @@ model Quote {
   quote           String
   saidBy          String
   movieId         Int         @map("movie_id")
-  createdDatetime DateTime    @default(now()) @map("created_datetime")
+  createdDatetime DateTime    @map("created_datetime") @default(now())
+  updatedDatime   DateTime?   @map("updated_datetime") @updatedAt
+
+  createdAtTimestampOrm             DateTime?     @map("created_at_timestamp_orm") @db.Timestamp() /// If you use @default(now()) you will get "Database error: Invalid default value for 'created_at_timestamp_orm'"
+  createdAtTimestampDb              DateTime      @map("created_at_timestamp_db") @db.Timestamp() @default(dbgenerated("NOW()"))
 
   movie Movie @relation(fields: [movieId], references: [id])
   @@map("quotes")
