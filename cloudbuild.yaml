@@ -1,0 +1,34 @@
+steps:
+# Add more step to create .env file
+# - id: 'prepare-env'
+
+- id: 'prepare-package.json'
+  name: gcr.io/azoom-x/jq
+  entrypoint: /bin/sh
+  args:
+    - -c
+    - jq '{ dependencies, devDependencies }' < package.json > package.deps.json
+- id: build
+  name: 'gcr.io/kaniko-project/executor:latest'
+  waitFor: ['prepare-package.json']
+  args:
+  - --dockerfile=./Dockerfile
+  - --destination=asia-south1-docker.pkg.dev/azoom-l-x-duy/pubsub-sample/${_DOCKER_IMAGE}:latest
+  - --cache=true
+  - --cache-ttl=336h
+- id: deploy
+  name: gcr.io/cloud-builders/gcloud
+  entrypoint: bash
+  args:
+    - '-c'
+    - |
+      gcloud run deploy ${_CLOUD_RUN_SERVICE_NAME} \
+        --image asia-south1-docker.pkg.dev/azoom-l-x-duy/pubsub-sample/${_DOCKER_IMAGE}:latest \
+        --allow-unauthenticated \
+        --region asia-south1 \
+        --platform managed \
+        --timeout 300
+
+substitutions:
+  _CLOUD_RUN_SERVICE_NAME: pubsub-sample
+  _DOCKER_IMAGE: pubsub-sample-image
